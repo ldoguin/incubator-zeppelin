@@ -49,6 +49,8 @@
 
         <module>launcher/standard</module>
         <module>launcher/spark</module>
+
+        <module>storage/mongodb</module>
     </modules>
 
     <dependencies>
