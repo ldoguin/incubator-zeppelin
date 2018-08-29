@@ -13,25 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ */ 
 
 package org.apache.zeppelin.notebook;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -40,11 +28,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Contains authorization information for notes
@@ -63,7 +48,7 @@ public class NotebookAuthorization {
   private static Map<String, Set<String>> userRoles = new HashMap<>();
   private static ZeppelinConfiguration conf;
 
-  private static ConfigStorage configStorage;
+  public static ConfigStorage configStorage;
 
   private NotebookAuthorization() {}
 

@@ -20,6 +20,8 @@ package org.apache.zeppelin.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +48,10 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 public class Credentials {
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
+  private static ConfigStorage configStorage;
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Boolean credentialsPersist = true;
-  File credentialsFile;
-
   private Encryptor encryptor;
   
   /**
@@ -65,11 +66,10 @@ public class Credentials {
     if (encryptKey != null) {
       this.encryptor = new Encryptor(encryptKey);
     }
+    this.configStorage = NotebookAuthorization.getInstance().configStorage;
 
     this.credentialsPersist = credentialsPersist;
-    if (credentialsPath != null) {
-      credentialsFile = new File(credentialsPath);
-    }
+
     credentialsMap = new HashMap<>();
 
     if (credentialsPersist) {
@@ -118,25 +118,10 @@ public class Credentials {
   }
 
   private void loadFromFile() {
-    LOG.info(credentialsFile.getAbsolutePath());
-    if (!credentialsFile.exists()) {
-      // nothing to read
-      return;
-    }
+
 
     try {
-      FileInputStream fis = new FileInputStream(credentialsFile);
-      InputStreamReader isr = new InputStreamReader(fis);
-      BufferedReader bufferedReader = new BufferedReader(isr);
-      StringBuilder sb = new StringBuilder();
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        sb.append(line);
-      }
-      isr.close();
-      fis.close();
-
-      String json = sb.toString();
+      String json = configStorage.loadCredentials();
 
       if (encryptor != null) {
         json = encryptor.decrypt(json);
@@ -160,23 +145,10 @@ public class Credentials {
     }
 
     try {
-      if (!credentialsFile.exists()) {
-        credentialsFile.createNewFile();
-
-        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
-        Files.setPosixFilePermissions(credentialsFile.toPath(), permissions);
-      }
-
-      FileOutputStream fos = new FileOutputStream(credentialsFile, false);
-      OutputStreamWriter out = new OutputStreamWriter(fos);
-
       if (encryptor != null) {
         jsonString = encryptor.encrypt(jsonString);
       }
-
-      out.append(jsonString);
-      out.close();
-      fos.close();
+      configStorage.saveCredentials(jsonString);
     } catch (IOException e) {
       LOG.error("Error saving credentials file", e);
     }
